@@ -1,9 +1,26 @@
-# Ignore raw data and junk files
-data/
-*.csv
-*.parquet
-*.json
+# Ignore all data files by default
+data/**/*.parquet
+data/**/*.csv
+
+# But keep only sample files
+!data/**/sample/*.parquet
+!data/**/sample/*.csv
+
+# Ignore HDFS logs or system files if accidentally copied
+*.crc
+.DS_Store
+
+# Python-related ignores
+__pycache__/
+*.py[cod]
+*.ipynb_checkpoints/
+
+# Spark local output (optional)
+spark-warehouse/
+.metastore_db/
+
+# Env and IDE files
+.env
 *.log
-*.zip
-*.gz
-*.ipynb_checkpoints
+.vscode/
+.idea/
