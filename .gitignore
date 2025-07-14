@@ -1,0 +1,9 @@
+# Ignore raw data and junk files
+data/
+*.csv
+*.parquet
+*.json
+*.log
+*.zip
+*.gz
+*.ipynb_checkpoints
