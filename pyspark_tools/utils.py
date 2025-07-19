@@ -16,10 +16,9 @@ def prepare_nyc_trip_data(paths: list) -> DataFrame:
     2. Renames raw columns to standardized names
     3. Adds location-based zone, borough, and service zone columns
     4. Adds time-based features like trip duration, hour, day of week, and month
-    5. Adds traffic-related features using external traffic dataset
-    6. Adds weather-related features using historical weather data
-    7. Drops unneeded columns for a cleaner final table
-    8. Adds engineered features for machine learning
+    5. Adds weather-related features using historical weather data
+    6. Drops unneeded columns for a cleaner final table
+    7. Adds engineered features for machine learning
     Returns:
         DataFrame: Transformed NYC taxi trip data ready for analysis or modeling
     """
@@ -32,6 +31,9 @@ def prepare_nyc_trip_data(paths: list) -> DataFrame:
     df = drop_useless_columns(df)
     df = add_ml_features(df)
     df = clean_nyc_data(df)
+
+    df.limit(100).write.mode("overwrite").parquet("data/output_data/sample_transformed_output.parquet")
+
     return df
 
 def rename_col(df: DataFrame, new_col: dict) -> DataFrame:
