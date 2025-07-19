@@ -59,8 +59,8 @@ def clean_nyc_data(df: DataFrame) -> DataFrame:
         df = df.filter(F.col("passenger_count") > 0)
 
     # Saving the garbage data for restoration or deletion
-    null_garb.write.mode("overwrite").parquet("file:///home/subburam/NYC_project/data/output_data/garbage_data/null_data")
-    iqr_garb.write.mode("overwrite").parquet("file:///home/subburam/NYC_project/data/output_data/garbage_data/skewed_data")
+    null_garb.write.mode("overwrite").parquet("/NYC_project/data/output_data/garbage_data/null_data")
+    iqr_garb.write.mode("overwrite").parquet("/NYC_project/data/output_data/garbage_data/skewed_data")
 
     return df
 
