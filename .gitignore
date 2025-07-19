@@ -3,8 +3,8 @@ data/**/*.parquet
 data/**/*.csv
 
 # But keep only sample files
-!data/**/sample/*.parquet
-!data/**/sample/*.csv
+!data/**/sample_data/*.parquet
+!data/**/sample_data/*.csv
 
 # Ignore HDFS logs or system files if accidentally copied
 *.crc
