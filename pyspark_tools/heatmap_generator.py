@@ -27,7 +27,7 @@ def get_heatmap(df, x_axis, y_axis, value_col, agg_func="avg"):
     # Group and aggregate	
     df_heatmap = df.groupBy(y_axis).pivot(x_axis).agg(agg_map[agg_func](value_col).alias("value"))
 	
-    output_path = f"/NYC_project/data/output_data/heat_map/heatmap-(x_axis:{x_axis},y_axis:{y_axis},values:{value_col})"
+    output_path = f"/NYC_taxi_data_batch_processing/data/output_data/heat_map/heatmap-(x_axis:{x_axis},y_axis:{y_axis},values:{value_col})"
 
     df_heatmap.write.mode("overwrite").csv(output_path, header=True)
 
