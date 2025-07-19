@@ -5,6 +5,7 @@ data/**/*.csv
 # But keep only sample files
 !data/**/sample_data/*.parquet
 !data/**/sample_data/*.csv
+!data /**/heat_map/*.csv
 
 # Ignore HDFS logs or system files if accidentally copied
 *.crc
