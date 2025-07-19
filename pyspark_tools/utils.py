@@ -1,7 +1,8 @@
 import requests
 import pandas as pd
+from data_cleaning import clean_nyc_data
 from pyspark.sql import SparkSession, DataFrame, functions as F
-from pyspark.sql.functions import date_format, avg
+from pyspark.sql.functions import date_format, avg, unix_timestamp
 from pyspark.sql.functions import (
     col, when, month, hour, to_timestamp, 
     concat_ws, to_date, to_timestamp
@@ -23,13 +24,14 @@ def prepare_nyc_trip_data(paths: list) -> DataFrame:
         DataFrame: Transformed NYC taxi trip data ready for analysis or modeling
     """
     df = union_df(paths)
+    df = clean_nyc_data(df)
     df = rename_nyc(df)
     df = add_location_labels(df)
     df = add_time_labels(df)
-    df = add_traffic_labels(df)
     df = add_weather_labels(df)
     df = drop_useless_columns(df)
     df = add_ml_features(df)
+    df = clean_nyc_data(df)
     return df
 
 def rename_col(df: DataFrame, new_col: dict) -> DataFrame:
@@ -95,7 +97,6 @@ def rename_nyc(df: DataFrame):
     "store_and_fwd_flag": "stored_forwarded",
     "PULocationID": "pickup_location",
     "DOLocationID": "dropoff_location",
-    "payment_type": "payment_type",
     "fare_amount": "fare",
     "extra": "extra_fees",
     "mta_tax": "mta_tax",
@@ -130,7 +131,7 @@ def add_location_labels(
     Uses rename_col internally for consistency.
     """
     spark = df.sparkSession
-    zones_df=spark.read.csv( "file:///home/subburam/NYC_project/data/taxi_zone_lookup.csv",  header=True,  inferSchema=True).cache()
+    zones_df=spark.read.csv( "file:///home/subburam/NYC_project/data/enrichment_data/taxi_zone_lookup.csv",  header=True,  inferSchema=True).cache()
     zones_df.count()  # Force materialization of the cached DF
 
     pickup_renames = {
@@ -171,7 +172,7 @@ def add_time_labels(df: DataFrame) -> DataFrame:
     """
     return df.withColumn(
         "trip_duration_min",
-        (F.unix_timestamp("end_time") - F.unix_timestamp("start_time")) / 60
+        (unix_timestamp("end_time") - unix_timestamp("start_time")) / 60
     ).withColumn(
         "hour_of_day",
         F.hour("start_time")
@@ -183,36 +184,9 @@ def add_time_labels(df: DataFrame) -> DataFrame:
         F.to_date("start_time")
     ).withColumn(
         "month", F.month("start_time")
-    )
-
-def add_traffic_labels(df: DataFrame):
-    spark = df.sparkSession
-    traffic_df=spark.read.csv("file:///home/subburam/NYC_project/data/traffic_q1_2025.csv", header=True, inferSchema=True)
-    traffic_df = traffic_df.withColumn("hour_of_day", hour("data_as_of")).withColumn("day_of_week", day_of_week_number("data_as_of"))
-    traffic_agg = traffic_df.groupBy("borough", "hour_of_day", "day_of_week") \
-    .agg(
-        avg("speed").alias("traffic_speed"),
-        avg("travel_time").alias("traffic_travel_time")
-    )
-
-    # Join traffic data with trip data
-    traffic_agg = traffic_agg.withColumnRenamed("borough", "pickup_borough")
-    df = df.join(
-    traffic_agg,
-    on=["pickup_borough", "hour_of_day", "day_of_week"],
-    how="left"
-    )
-    # Calculate trip efficiency and speed difference
-    df = df.withColumn(
-        "trip_efficiency",
-        when(col("trip_duration_min") >= 1, col("distance_miles") / (col("trip_duration_min") / 60)).otherwise(None)
-    )
-    # Calculate speed difference
-    df = df.withColumn(
-        "speed_diff",
-        col("trip_efficiency") - col("traffic_speed")
-    )
-    return df
+    ).withColumn(
+        "speed_mph",
+        when(col("trip_duration_min") > 0, col("distance_miles") / (col("trip_duration_min") / 60)).otherwise(F.lit(None))      )
 
 def add_weather_labels(df: DataFrame) -> DataFrame:
     """
@@ -224,7 +198,7 @@ def add_weather_labels(df: DataFrame) -> DataFrame:
     spark = df.sparkSession
 
     # Fetch weather data
-    weather_df = spark.read.csv("file:///home/subburam/NYC_project/data/weather_q1_2025.csv", header=True, inferSchema=True)
+    weather_df = spark.read.csv("file:///home/subburam/NYC_project/data/enrichment_data/weather_q1_2025.csv", header=True, inferSchema=True)
 
     # Preprocess timestamps for joining
     weather_df = weather_df.withColumn("time_ts", to_timestamp("time"))
@@ -281,7 +255,7 @@ def add_ml_features(df: DataFrame) -> DataFrame:
         when(col("tip") > 0, 1).otherwise(0).alias("tipped"),
 
         # 7. Fare per minute: fare normalized by trip duration
-        when(col("trip_duration_min") >= 1, col("fare") / col("trip_duration_min")).otherwise(0.0).alias("fare_per_min"),
+        when(col("trip_duration_min") > 0, col("fare") / col("trip_duration_min")).otherwise(0.0).alias("fare_per_min"),
 
         # 8. Rain indicator: 1 if precipitation > 0
         when(col("precipitation") > 0, 1).otherwise(0).alias("is_raining"),
