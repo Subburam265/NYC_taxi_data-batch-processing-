@@ -32,7 +32,7 @@ def prepare_nyc_trip_data(paths: list) -> DataFrame:
     df = add_ml_features(df)
     df = clean_nyc_data(df)
 
-    df.write.mode("overwrite").parquet("NYC_taxi_data-batch-processing/data/output_data/transformed_data")
+    df.write.mode("overwrite").parquet("NYC_taxi_data_batch_processing/data/output_data/transformed_data")
 
     return df
 
@@ -133,7 +133,7 @@ def add_location_labels(
     Uses rename_col internally for consistency.
     """
     spark = df.sparkSession
-    zones_df=spark.read.csv( "NYC_taxi_data-batch-processing/data/enrichment_data/taxi_zone_lookup.csv",  header=True,  inferSchema=True).cache()
+    zones_df=spark.read.csv( "NYC_taxi_data_batch_processing/data/enrichment_data/taxi_zone_lookup.csv",  header=True,  inferSchema=True).cache()
     zones_df.count()  # Force materialization of the cached DF
 
     pickup_renames = {
@@ -200,7 +200,7 @@ def add_weather_labels(df: DataFrame) -> DataFrame:
     spark = df.sparkSession
 
     # Fetch weather data
-    weather_df = spark.read.csv("NYC_taxi_data-batch-processing/data/enrichment_data/weather_q1_2025.csv", header=True, inferSchema=True)
+    weather_df = spark.read.csv("NYC_taxi_data_batch_processing/data/enrichment_data/weather_q1_2025.csv", header=True, inferSchema=True)
 
     # Preprocess timestamps for joining
     weather_df = weather_df.withColumn("time_ts", to_timestamp("time"))
