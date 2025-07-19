@@ -32,7 +32,7 @@ def prepare_nyc_trip_data(paths: list) -> DataFrame:
     df = add_ml_features(df)
     df = clean_nyc_data(df)
 
-    df.limit(100).write.mode("overwrite").parquet("NYC_taxi_data-batch-processing/data/output_data/sample_transformed_output.parquet")
+    df.write.mode("overwrite").parquet("NYC_taxi_data-batch-processing/data/output_data/sample_transformed_output.parquet")
 
     return df
 
