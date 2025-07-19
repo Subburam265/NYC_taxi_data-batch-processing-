@@ -28,7 +28,9 @@ NYC_taxi_data-batch-processing/
 │   ├── heatmap_generator.py   # Heatmap generation from enriched data
 │   └── utils.py               # Helper functions
 ├── .gitignore
-└── README.md 
+└── README.md
+```
+
 
 ## ✅ Features Implemented
 | Feature | Status | Description |
