@@ -17,17 +17,18 @@ City transport datasets are notoriously messy. This project:
 - This lays the groundwork for use cases in urban planning, traffic optimization, or dynamic pricing models.
 
 ## 📂 Folder Structure
+```text
 NYC_taxi_data-batch-processing/
-├── data/ # Input & output data (sample only)
-│ ├── enrichment_data/ # Zone, traffic, weather (optional)
-│ ├── taxi_data/ # Sample NYC tripdata (Parquet)
-│ └── output_data/ # Cleaned data + generated heatmaps
-├── pyspark_tools/ # Core Python modules
-│ ├── data_cleaning.py
-│ ├── heatmap_generator.py
-│ └── utils.py
+├── data/
+│   ├── enrichment_data/       # Optional zone, traffic, and weather data
+│   ├── taxi_data/             # Sample NYC tripdata (Parquet format)
+│   └── output_data/           # Cleaned data and generated heatmaps
+├── pyspark_tools/             # Core PySpark processing modules
+│   ├── data_cleaning.py       # Main cleaning logic
+│   ├── heatmap_generator.py   # Heatmap generation from enriched data
+│   └── utils.py               # Helper functions
 ├── .gitignore
-└── README.md
+└── README.md 
 
 ## ✅ Features Implemented
 | Feature | Status | Description |
